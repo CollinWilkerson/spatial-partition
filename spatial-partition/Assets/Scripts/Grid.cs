@@ -29,6 +29,9 @@ public class Grid
         int cellX = (int)(soldier.soldierTrans.position.x / cellSize);
         int cellZ = (int)(soldier.soldierTrans.position.z / cellSize);
 
+        soldier.oldCellX = cellX;
+        soldier.oldCellZ = cellZ;
+
         //Add the soldier to the front of the list for the cell it's in
         soldier.previousSoldier = null;
         soldier.nextSoldier = cells[cellX, cellZ];
@@ -64,7 +67,6 @@ public class Grid
         {
             //The distance sqr between the soldier and this enemy
             float distSqr = (enemy.soldierTrans.position - friendlySoldier.soldierTrans.position).sqrMagnitude;
-
             //If this distance is better than the previous best distance, then we have found an enemy that's closer
             if (distSqr < bestDistSqr)
             {
@@ -85,8 +87,8 @@ public class Grid
     public void Move(Soldier soldier, Vector3 oldPos)
     {
         //See which cell it was in 
-        int oldCellX = (int)(oldPos.x / cellSize);
-        int oldCellZ = (int)(oldPos.z / cellSize);
+        int oldCellX = soldier.oldCellX;
+        int oldCellZ = soldier.oldCellZ;
 
         //See which cell it is in now
         int cellX = (int)(soldier.soldierTrans.position.x / cellSize);
@@ -98,24 +100,34 @@ public class Grid
             return;
         }
 
-        //Unlink it from the list of its old cell
+        Remove(soldier);
+
+        //Add it bacl to the grid at its new cell
+        Add(soldier);
+
+        soldier.oldCellX = cellX;
+        soldier.oldCellZ = cellZ;
+    }
+
+    public void Remove(Soldier soldier)
+    {
+
+        if (soldier == null) return;
+
+        //mends gap from the removal of the linked list
         if (soldier.previousSoldier != null)
         {
             soldier.previousSoldier.nextSoldier = soldier.nextSoldier;
         }
-
         if (soldier.nextSoldier != null)
         {
             soldier.nextSoldier.previousSoldier = soldier.previousSoldier;
         }
 
         //If it's the head of a list, remove it
-        if (cells[oldCellX, oldCellZ] == soldier)
+        if (cells[soldier.oldCellX, soldier.oldCellZ] == soldier)
         {
-            cells[oldCellX, oldCellZ] = soldier.nextSoldier;
+            cells[soldier.oldCellX, soldier.oldCellZ] = soldier.nextSoldier;
         }
-
-        //Add it bacl to the grid at its new cell
-        Add(soldier);
     }
 }

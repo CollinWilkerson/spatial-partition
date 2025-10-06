@@ -14,11 +14,14 @@ public class Soldier
     public Soldier previousSoldier;
     public Soldier nextSoldier;
 
+    public int oldCellZ;
+    public int oldCellX;
+
     //The enemy doesnt need any outside information
     public virtual void Move()
     { }
 
-    //The friendly has to move which soldier is the closest
+    //The friendly has to move to which soldier is the closest
     public virtual void Move(Soldier soldier)
     { }
 }

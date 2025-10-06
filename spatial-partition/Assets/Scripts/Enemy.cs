@@ -66,4 +66,6 @@ public class Enemy : Soldier
         //Rotate towards the target
         soldierTrans.rotation = Quaternion.LookRotation(currentTarget - soldierTrans.position);
     }
+
+    
 }

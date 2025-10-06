@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 
 public class GameController : MonoBehaviour
@@ -17,10 +18,10 @@ public class GameController : MonoBehaviour
     public Transform enemyParent;
     public Transform friendlyParent;
 
-    List<Soldier> enemySoldiers = new List<Soldier>();
-    List<Soldier> friendlySoldiers = new List<Soldier>();
+    private static List<Soldier> enemySoldiers = new List<Soldier>();
+    private static List<Soldier> friendlySoldiers = new List<Soldier>();
 
-    List<Soldier> closestEnemies = new List<Soldier>();
+    private static List<Soldier> closestEnemies = new List<Soldier>();
 
     private bool slow = false;
 
@@ -30,7 +31,7 @@ public class GameController : MonoBehaviour
     [SerializeField] float mapWidth = 50f;
     [SerializeField] int cellSize = 10;
 
-    Grid grid;
+    private static Grid grid;
 
     private void Start()
     {
@@ -64,6 +65,12 @@ public class GameController : MonoBehaviour
     private void Update()
     {
         timeText.text = "Frame time: " + Time.deltaTime;
+
+        for (int j = 0; j < mapWidth; j += cellSize)
+        {
+            Debug.DrawLine(new Vector3(1, 0, 0) * j, new Vector3(1 * j, 0, mapWidth));
+            Debug.DrawLine(new Vector3(0, 0, 1) * j, new Vector3(mapWidth, 0, 1 * j));
+        }
         //move enemies
         for (int i = 0; i < enemySoldiers.Count; i++)
         {
@@ -73,6 +80,8 @@ public class GameController : MonoBehaviour
         //reset enemies
         for (int i = 0; i < closestEnemies.Count; i++)
         {
+            if (closestEnemies[i].soldierMeshRenderer == null)
+                continue;
             closestEnemies[i].soldierMeshRenderer.material = enemyMaterial;
         }
 
@@ -128,5 +137,45 @@ public class GameController : MonoBehaviour
     public void SlowSwitch()
     {
         slow = !slow;
+    }
+
+    public static void RemoveEnemy(Transform soldierTransform)
+    {
+        Soldier soldier = GetSoldierInList(soldierTransform, enemySoldiers);
+
+        if (soldier == null)
+            return;
+
+        enemySoldiers.Remove(soldier);
+        if (closestEnemies.Contains(soldier))
+            closestEnemies.Remove(soldier);
+
+        grid.Remove(soldier);
+
+        Destroy(soldierTransform.gameObject);
+    }
+
+    public static void RemoveFriendly(Transform soldierTransform)
+    {
+        Soldier soldier = GetSoldierInList(soldierTransform, enemySoldiers);
+
+        if (soldier == null)
+            return;
+
+        friendlySoldiers.Remove(soldier);
+
+        grid.Remove(soldier);
+
+        Destroy(soldierTransform.gameObject);
+    }
+
+
+    private static Soldier GetSoldierInList(Transform soldierTransform, List<Soldier> list)
+    {
+        foreach (Soldier x in list)
+            if (x.soldierTrans == soldierTransform)
+                return x;
+
+        return null;
     }
 }
